@@ -2,7 +2,7 @@ import os
 import numpy as np
 import random
 import glob
-
+import copy
 
 
 class DataLoader:
@@ -32,7 +32,7 @@ class DataLoader:
         """
         # Recursively glob through data path
         num_files = 0
-        data = []
+        day_data = []
         for path in glob.glob(f"{self.data_path}/{year}/{month}/{day}", recursive=False):
             # Ensure valid path
             if not os.path.isfile(path):
@@ -41,11 +41,12 @@ class DataLoader:
             # Read file into memory and append to data
             num_files += 1
             with open(path, 'rb') as fp:
-                data.append(fp.read())
+                day_data.append(fp.read())
 
-        # Append generated list to class data
-        if data:
-            self.data.append(data)
+        # Generate contiguous runs of self.frame_count size each
+        assert self.frame_count > 0, "Did you really pass a sequence length of zero?!"
+        for i in range(0, len(day_data), self.frame_count):
+            self.data.append(day_data[i:i+self.frame_count])
 
         # Return number of files we were able to parse so we can check if any data were retrieved
         return num_files
@@ -53,6 +54,7 @@ class DataLoader:
 
     def get_all_data():
         """This function should get all weather data currently in the dataset"""
+        return self.data
 
 
     def random_shuffle(self):
@@ -60,12 +62,15 @@ class DataLoader:
         We need this function to randomly shuffle self.data. I think random
         should have a function for this but not sure.
         """
+        random.shuffle(self.data)
 
 
     def get_batch(self, size):
         """
         This function should return a batch of 'size' random time sequences
         """
+        self.random_shuffle()
+        return copy.deepcopy(self.data[:size])
 
 """
 Whatever you want this file to run (if you want to test), you can write your
