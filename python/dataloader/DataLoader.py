@@ -3,7 +3,7 @@ import numpy as np
 import random
 import glob
 import copy
-
+from PIL import Image
 
 class DataLoader:
 
@@ -40,8 +40,9 @@ class DataLoader:
 
             # Read file into memory and append to data
             num_files += 1
-            with open(path, 'rb') as fp:
-                day_data.append(fp.read())
+            img = Image.open(path)
+            img.load()
+            day_data.append(np.asarray(img, dtype="int32"))
 
         # Generate contiguous runs of self.frame_count size each
         assert self.frame_count > 0, "Did you really pass a sequence length of zero?!"
