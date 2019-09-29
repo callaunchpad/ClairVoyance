@@ -31,6 +31,10 @@ class DataLoader:
         to ensure uniform length of time sequences.
         """
 
+    def get_all_data():
+        """This function should get all weather data currently in the dataset"""
+
+
     def random_shuffle(self):
         """
         We need this function to randomly shuffle self.data. I think random
@@ -40,7 +44,7 @@ class DataLoader:
 
     def get_batch(self, size):
         """
-        This function should return a batch of 'size' time sequences
+        This function should return a batch of 'size' random time sequences
         """
 
 """
