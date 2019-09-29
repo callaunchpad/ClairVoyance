@@ -9,3 +9,4 @@ def crop(arr, x_left, x_right, y_top, y_bottom):
     [num_images, channels, rows, columns]
     Need to crop this array in the last two dimensions according to params.
     """
+    return arr[:,:,y_top:y_bottom,x_left:x_right]
