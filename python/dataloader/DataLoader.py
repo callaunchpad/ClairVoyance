@@ -8,8 +8,8 @@ import glob
 class DataLoader:
 
     def __init__(self, frame_count):
-        self.data_path = #create path to dataset from dataloader file
-        self.data = [] #This is where we will append all our data
+        self.data_path = # create path to dataset from dataloader file
+        self.data = [] # this is where we will append all our data
         self.frame_count = frame_count
 
     """
@@ -30,6 +30,26 @@ class DataLoader:
         If num_pics % self.frame_count != 0 then just ignore last few images
         to ensure uniform length of time sequences.
         """
+        # Recursively glob through data path
+        num_files = 0
+        data = []
+        for path in glob.glob(f"{self.data_path}/{year}/{month}/{day}", recursive=False):
+            # Ensure valid path
+            if not os.path.isfile(path):
+                continue
+
+            # Read file into memory and append to data
+            num_files += 1
+            with open(path, 'rb') as fp:
+                data.append(fp.read())
+
+        # Append generated list to class data
+        if data:
+            self.data.append(data)
+
+        # Return number of files we were able to parse so we can check if any data were retrieved
+        return num_files
+
 
     def get_all_data():
         """This function should get all weather data currently in the dataset"""
