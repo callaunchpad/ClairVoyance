@@ -1,4 +1,4 @@
-import os
+import os, sys
 import numpy as np
 import random
 import glob
@@ -7,10 +7,11 @@ from PIL import Image
 
 class DataLoader:
 
-    def __init__(self, frame_count):
-        self.data_path = # create path to dataset from dataloader file
+    def __init__(self, data_path, frame_count, max_file_num=None):
+        self.data_path = data_path # create path to dataset from dataloader file
         self.data = [] # this is where we will append all our data
         self.frame_count = frame_count
+        self.max_file_num = max_file_num # can be set to some number so we don't read too much data into memory
 
     """
     def find_data_path(self):
@@ -33,20 +34,30 @@ class DataLoader:
         # Recursively glob through data path
         num_files = 0
         day_data = []
-        for path in glob.glob(f"{self.data_path}/{year}/{month}/{day}", recursive=False):
+        max_str = self.max_file_num or "(unlimited)"
+        for path in glob.glob(f"{self.data_path}/{year}/{month}/{day}/*.png", recursive=False):
+            # Don't go overboard in loading data into memory
+            if self.max_file_num is not None and num_files + 1 > self.max_file_num:
+                break
+
             # Ensure valid path
             if not os.path.isfile(path):
                 continue
 
             # Read file into memory and append to data
             num_files += 1
+            print(f"\rLoaded {num_files} of {max_str} files into memory", end="...")
+            sys.stdout.flush()
             img = Image.open(path)
             img.load()
             day_data.append(np.asarray(img, dtype="int32"))
 
         # Generate contiguous runs of self.frame_count size each
+        print("done.")
         assert self.frame_count > 0, "Did you really pass a sequence length of zero?!"
         for i in range(0, len(day_data), self.frame_count):
+            if i + self.frame_count > len(day_data):
+                break
             self.data.append(day_data[i:i+self.frame_count])
 
         # Return number of files we were able to parse so we can check if any data were retrieved
@@ -71,7 +82,7 @@ class DataLoader:
         This function should return a batch of 'size' random time sequences
         """
         self.random_shuffle()
-        return copy.deepcopy(self.data[:size])
+        return self.data[:size] #copy.deepcopy(self.data[:size])
 
 """
 Whatever you want this file to run (if you want to test), you can write your
@@ -80,3 +91,8 @@ if __name__ == "__main__":
 
 
     """
+
+if __name__ == '__main__':
+    loader = DataLoader("/Users/sumer/Downloads/WeatherData", 5, 100)
+    loader.load_data("2009", "01", "01")
+    print(f"Generated {len(loader.data)} sequences.")
